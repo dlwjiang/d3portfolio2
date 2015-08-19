@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+  <title>d3portfolio</title>
+
+
+  <link href='http://fonts.googleapis.com/css?family=Indie+Flower' rel='stylesheet' type='text/css'>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js" charset="utf-8"></script>
+  <link href='http://fonts.googleapis.com/css?family=Roboto:300' rel='stylesheet' type='text/css'>
+  <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+  <script src="http://underscorejs.org/underscore-min.js"></script>
+  <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+
+  <style type="text/css">
+
+ /* * { background-color: rgba(255,0,0,.2); }
+* * { background-color: rgba(0,255,0,.2); }
+* * * { background-color: rgba(0,0,255,.2); }
+* * * * { background-color: rgba(255,0,255,.2); }
+* * * * * { background-color: rgba(0,255,255,.2); }
+* * * * * * { background-color: rgba(255,255,0,.2); }*/
+  body {
+    font-family: 'Roboto', sans-serif;
+    font-weight: 300px;
+  }
+
+  .container-fluid {
+    padding: 0px;
+  }
+
+  #title {
+    font-size: 60px;
+    margin-left:10px;
+  }
+
+  .example-container {
+    height: 100px;
+    position: relative;
+  }
+
+  .examples-section {
+    padding: 0px;
+  }
+
+  #spiral-container {
+    background-color: #FFBF00;
+    opacity: 0.8;
+   /* background-image: url("./images/bokeh1.jpg");
+    background-size: 100% 100%;
+    background-repeat: no-repeat;*/
+    /*-webkit-filter: blur(5px);*/
+  }
+
+  #crossword-container {
+    background-color: #E83F6F;
+    opacity: 0.8;
+  }
+
+  #circles-container {
+    background-color: #2274A5;
+    opacity: 0.8;
+  }
+
+  .thumb a, .description {
+    color: white;
+    transition: all 5s linear;
+  }
+
+  .thumb a:hover {
+    text-decoration: none;
+    transform: scale(1.2);
+  }
+
+  .thumb {
+    font-size: 40px;
+  }
+
+  .description {
+    height: 100%;
+    text-align: center;
+    font-size: 20px;
+    padding: 5px;
+    top: 50%;
+    transform: translate(0, -50%);
+  }
+
+  .description .desc-text {
+    position:relative;
+    top: 30%;
+  }
+
+  .filler {
+    opacity: 0.5 !important;
+  }
+
+  /* Sticky footer styles
+  -------------------------------------------------- */
+  html {
+    position: relative;
+    min-height: 100%;
+  }
+  body {
+    /* Margin bottom by footer height */
+    margin-bottom: 60px;
+  }
+  .footer {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    /* Set the fixed height of the footer here */
+    height: 60px;
+    background-color: #f5f5f5;
+  }
+
+  .container .text-muted {
+    margin: 20px 0;
+  }
+
+  header .text-muted a {
+    margin-left:20px;
+  }
+
+  </style>
+
+</head>
+<body>
+
+  <div class="container-fluid">
+
+    <header >
+      <span id="title">D3 Examples</span>
+      <span class="text-muted">
+        <a href="https://www.linkedin.com/pub/david-jiang/51/182/746">about</a>
+        <a href="https://github.com/dlwjiang" class="github-link">github</a>
+      </span>
+    </header>
+
+    <section class="col-md-12 examples-section">
+
+      <div class="example-container" id="spiral-container">
+        <span class="col-md-2 thumb"><a href="spiral.html">Spiral</a></span>
+        <span class="col-md-10 description">
+          <span class="desc-text">Prints a 2D array in a spiral order.</span>
+        </span>
+      </div>
+
+      <div class="example-container" id="crossword-container">
+        <span class="col-md-2 thumb"><a href="crossword.html">Crossword</a></span>
+        <span class="col-md-10 description">
+          <span class="desc-text">Given a 2D matrix of letters, finds input word vertically, horizontally, or diagonally.</span>
+        </span>
+      </div>
+
+      <div class="example-container" id="circles-container">
+        <span class="col-md-2 thumb"><a href="circles.html">Circles</a></span>
+        <span class="col-md-10 description">
+          <span class="desc-text">Using D3.js to animate circles.</span>
+        </span>
+      </div>
+
+    </section>
+
+    <footer class="footer">
+      <div class="container">
+        <p class="text-muted">
+          <a href="http://blackjack-dlwj.appspot.com/">Blackjack-Game</a>
+        </p>
+      </div>
+    </footer>
+
+  </div>
+
+  <!-- ========== -->
+  <!-- JAVASCRIPT -->
+  <!-- ========== -->
+
+  <script type="text/javascript">
+  </script>
+
+</body>
+</html>

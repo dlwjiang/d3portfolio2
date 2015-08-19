@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+  <title>Word Finder</title>
+
+  <style type="text/css">
+
+    #header-text h1 {
+      font-size: 80px;
+      color: #2274A5;
+      font-family: 'Roboto', sans-serif;
+      font-weight:300;
+      margin: 0px;
+    }
+
+    .circle {
+      cursor : pointer;
+    }
+
+    #search{
+      margin-top:20px;
+      width: 50%;
+      height:30px;
+      background-color:#fee;
+      font-size:25px;
+    }
+
+    #crossword {
+      margin: 0px auto;
+      text-align: center;
+    }
+
+    /* From http://webdesign.tutsplus.com/tutorials/css-experiments-with-a-search-form-input-and-button--cms-22069 */
+
+    input:focus {
+      outline-width: 0;
+    }
+
+    .container-4{
+      overflow: hidden;
+      width: 100%;
+      text-align: center;
+      vertical-align: middle;
+      white-space: nowrap;
+    }
+
+    .container-4 input#search{
+      width: 98%;
+      height: 50px;
+      background: #2274A5;
+      border: none;
+      font-size: 20px;
+      color: #fff;
+      padding-left: 15px;
+      -webkit-border-radius: 5px;
+      -moz-border-radius: 5px;
+      border-radius: 5px;
+    }
+
+    .container-4 input#search::-webkit-input-placeholder {
+       color: #fff;
+    }
+
+    .container-4 button.icon{
+      -webkit-border-top-right-radius: 5px;
+      -webkit-border-bottom-right-radius: 5px;
+      -moz-border-radius-topright: 5px;
+      -moz-border-radius-bottomright: 5px;
+      border-top-right-radius: 5px;
+      border-bottom-right-radius: 5px;
+
+      border: none;
+      background: #232833;
+      height: 50px;
+      width: 50px;
+      color: #4f5b66;
+      opacity: 0;
+      font-size: 10pt;
+
+      -webkit-transition: all .55s ease;
+      -moz-transition: all .55s ease;
+      -ms-transition: all .55s ease;
+      -o-transition: all .55s ease;
+      transition: all .55s ease;
+    }
+
+  </style>
+
+  <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js" charset="utf-8"></script>
+  <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+  <script src="http://underscorejs.org/underscore-min.js"></script>
+
+</head>
+<body>
+
+  <!-- ====== -->
+  <!-- Header -->
+  <!-- ====== -->
+  <div id="header-text">
+    <h1>Crossword Word Finder</h1>
+  </div>
+
+  <!-- ========== -->
+  <!-- Search Box -->
+  <!-- ========== -->
+  <div class="box">
+    <div class="container-4">
+      <input type="search" id="search" placeholder="Find a word horizontally, vertically, or diagonally ... (p.s. click a circle!)" />
+    </div>
+  </div>
+
+  <!-- ============== -->
+  <!-- Crossword Area -->
+  <!-- ============== -->
+  <div id="crossword"></div>
+
+  <!-- ========== -->
+  <!-- JAVASCRIPT -->
+  <!-- ========== -->
+
+  <script type="text/javascript">
+
+    var divs = d3.select("#crossword");
+    var height = $(window).height() * 0.7;
+
+    var svg = divs.append('svg')
+                  .attr("id", "crosswordSVG")
+                  .attr('height', height)
+                  .attr('width', "100%");
+
+    /**
+    *
+    * Charting Variables
+    *
+    **/
+
+    var strokeWidth   = 4;
+    var circleRadius  = 30;
+    var circlePadding = 2;
+    //stroke radius is drawn centered on the circle radius, not outside wrapping around it.
+    var totalRadius  = circleRadius + strokeWidth/2 + circlePadding/2;
+    var shrinkRadius = 10;
+    var fontSize = "25px";
+
+    var windowWidth = $("#crosswordSVG").width();
+    //calculate number of circles based on window width;
+    var maxColumns = Math.floor(windowWidth / (2*totalRadius) );
+    var maxRows = Math.floor(height/(2*totalRadius));
+
+    //2D array
+    var data = _.range(maxRows).map(function(){
+          return _.range(maxColumns).map(getCharacter);
+    });
+
+    var color = d3.scale.category20();
+
+    var row = svg.selectAll('g.row')
+                 .data(data)
+                 .enter()
+                 .append('g').attr("class", "row")
+                 //vertical offset
+                 .attr('transform', function(d, i){return 'translate(0,'+ (((i+1) * totalRadius * 2)) +')';});
+
+    //each group will consists of a circle & its text.
+    var circleGroups = row.selectAll("g.circle")
+                           .data(function(d){ return d; })
+                           .enter()
+                           .append("g").attr("class", "circle")
+                           //horizontal offset, transform is offset by totalRadius as default position is circles center.
+                           .attr('transform', function(d, i){return 'translate('+ (((i+1) * totalRadius * 2) - totalRadius) +',0)';});
+
+    //save this variable to perform styling changes on circles later on.
+    //CIRCLES
+    var circles = circleGroups
+         .append('circle')
+         .style("stroke", "white")
+         .style("stroke-width", strokeWidth )
+         .style("fill", function(d,i) {
+            return "#2274A5";
+          })
+         .attr('r', circleRadius);
+
+    //TEXT
+    circleGroups
+         .append('text')
+         .text(function(d){return d;})
+         .style("fill", "#fff")
+         .style("text-anchor", "middle")
+         .style("dominant-baseline", "middle")
+         .style("font-size", fontSize);
+
+    /*==============================================
+    =            Fun Animation on Click            =
+    ==============================================*/
+
+    circleGroups.on('click',function(d,i) {
+
+      d3.select(this).select("circle")
+        .transition().duration(1000).attr('r',shrinkRadius)
+        .transition().duration(1000).attr('r',circleRadius);
+
+      d3.select(this).select("text")
+        .transition().duration(3000).attrTween('transform', rotTween);
+
+    });
+
+    /*=================================================
+    =            Charting Helper Functions            =
+    =================================================*/
+
+    //360 degree rotation
+    function rotTween() {
+        var i = d3.interpolate(0, 360 * 10);
+        return function(t) {
+            return "rotate(" + i(t) + ",0,0)";
+        };
+    }
+
+    //random character generator.
+    function getCharacter(){
+      var character = "";
+      character = String.fromCharCode(Math.floor( Math.random() * 26) + "a".charCodeAt(0));
+      return character;
+    }
+
+    /*====================================================================
+    =            Change styles based on whether word is found            =
+    ====================================================================*/
+
+    $("#search").on('keyup', function(e){
+
+      var indexesToHighlight = findWord(data,e.target.value);
+
+      circles.style("stroke",function(d,i,j){
+
+        for (var x = 0; x < indexesToHighlight.length; x++){
+          if (_.isEqual([j,i],indexesToHighlight[x])){
+            return "#E83F6F" ;
+          }
+        }
+        return "white";
+
+      })
+
+    });
+
+    /*=================================================
+    =            Find word given 2-d array            =
+    =================================================*/
+
+    function findWord(crossword, word){
+
+        var rowsLength = crossword.length;
+        var columnsLength = crossword[0].length;
+        var startPositions = [];
+
+        //holds results
+        var foundPositions = [];
+
+        for (var i = 0; i < rowsLength; i ++) {
+            for (var j = 0; j < columnsLength; j ++) {
+                if (crossword[i][j] === word[0]){
+                    startPositions.push([i,j]);
+                }
+            }
+        }
+
+        for (var i = 0; i < startPositions.length; i++) {
+
+            var secondLetter = word[1];
+            var thisPos = startPositions[i];
+
+            checkDirection('upRight');
+            checkDirection('right');
+            checkDirection('downRight');
+            checkDirection('down');
+
+            checkDirection('downLeft');
+            checkDirection('left');
+            checkDirection('upLeft');
+            checkDirection('up');
+
+        }
+
+        return foundPositions;
+
+        /**
+        *
+        * Helper Functions
+        *
+        **/
+
+        function checkDirection(direction) {
+
+            //multiplier for each direction
+            //a is vertical, b is horizontal.
+            var a,b;
+            if (direction === "upRight"){
+                a = -1;
+                b = 1;
+            }
+            if (direction === "right"){
+                a = 0;
+                b = 1;
+            }
+            if (direction === "downRight"){
+                a = 1;
+                b = 1;
+            }
+            if (direction === "down"){
+                a = 1;
+                b = 0;
+            }
+            if (direction === "downLeft"){
+                a = 1;
+                b = -1;
+            }
+            if (direction === "left"){
+                a = 0;
+                b = -1;
+            }
+            if (direction === "upLeft"){
+                a = -1;
+                b = -1;
+            }
+            if (direction === "up"){
+                a = -1;
+                b = 0;
+            }
+
+            //add an alternative for if second letter does not exists (edge of board)
+            var secondLetter = getLetter(crossword,go(thisPos,a,b) || [0,0]);
+
+            //check second letter & that overall word fits
+            if ((secondLetter === word[1]) && (go(thisPos,a*(word.length-1),b*(word.length-1)) !== false)){
+
+                var initArray = _.range(word.length);
+                var indexesArray = _.map(initArray,function(each,index){
+                    return go(thisPos, a*index, b*index);
+                });
+                var lettersArray = _.map(indexesArray, function(eachIndex){
+                    return getLetter(crossword, eachIndex);
+                })
+                var potentialWord = lettersArray.join("");
+
+                if (potentialWord === word) {
+                    foundPositions = foundPositions.concat(indexesArray);
+                }
+
+            }
+        }
+
+        /*
+         * helper function to retrive letter given an array [x,y] with x as row positions and y as column position.
+         */
+        function getLetter(crossword, array) {
+            return crossword[array[0]][array[1]];
+        }
+
+        /*
+         * returns a new positions given an origin position and the vertical & horizontal offset.
+         * rowsLength & columnsLength are closure variables
+         */
+        function go(pair,vertical,horizontal) {
+
+            var newVertical = pair[0] + vertical;
+            var newHorizontal = pair[1] + horizontal;
+
+            //returns false if new positions exceeds board edge.
+            if ( (newVertical >= 0 && newVertical < rowsLength)
+                  && (newHorizontal >= 0 && newHorizontal < columnsLength)) {
+                return [newVertical, newHorizontal];
+            } else {
+                return false;
+            }
+
+        }
+
+    }
+
+
+  </script>
+
+</body>
+</html>
