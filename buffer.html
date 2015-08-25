@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+  <title>Buffer</title>
+
+  <style type="text/css">
+
+    svg {
+      background-color: #fff;
+    }
+
+    body {
+      margin:0px;
+    }
+
+
+  </style>
+
+  <link href='http://fonts.googleapis.com/css?family=Indie+Flower' rel='stylesheet' type='text/css'>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js" charset="utf-8"></script>
+  <link href='http://fonts.googleapis.com/css?family=Roboto:300' rel='stylesheet' type='text/css'>
+  <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+  <script src="http://underscorejs.org/underscore-min.js"></script>
+
+</head>
+<body>
+
+  <div>
+    <h1>Last N Buffer</h1>
+    <h3>
+      Keeps track of count of events for last N seconds via the concept of self-destructing objects.
+    </h3>
+  </div>
+
+  <!-- ============== -->
+  <!-- Buffer Area -->
+  <!-- ============== -->
+  <div id="buffer-area">
+    <div>
+      Count: <span id="count">0</span>
+    </div>
+  </div>
+
+  <!-- ========== -->
+  <!-- JAVASCRIPT -->
+  <!-- ========== -->
+
+  <script type="text/javascript">
+
+    var height = $(window).height();
+    var opacity = 0.2;
+
+    var svg = d3.select("#buffer-area")
+                .append('svg')
+                .attr('height', height)
+                .attr('width', "100%");
+
+    var width = $("svg").width();
+
+    var color = d3.scale.category20();
+
+    var counts = [];
+    var count = 0;
+    var counter = 0;
+
+    function log_hit(){
+
+        var event = {
+          id: counter,
+          opacity: 1
+        }
+        counts.push(event);
+        count++;
+        $("#count").html(count);
+
+        for (var i = 1; i <= 5; i++){
+          setTimeout(function(event,counter){
+              return function(){
+
+                event.opacity -= 0.2;
+
+                if (event.opacity <= 0.1){
+                  var index = _.findIndex(counts, function (each) {
+                    return each.id === counter;
+                  });
+                  counts.splice(index,1);
+                  count--;
+                }
+              }
+          }(event,counter),1000*i)
+        }
+
+        counter++;
+    }
+
+    setInterval(function () {
+
+      var numToPush = Math.floor(Math.random()*5);
+      for (var j = 0; j < numToPush; j++){
+        log_hit();
+      }
+      update();
+
+    },1000)
+
+    //Create number line
+
+    svg.selectAll('text')
+       .data(_.range(1,30))
+       .enter()
+       .append('text')
+       .text(function(d){ return d;})
+       .attr('transform', function(d,i){
+          return 'translate(' + i*30 +',100)'
+        })
+
+    function update(){
+
+      var rectangles = svg.selectAll('rect')
+                           .data(counts, function(d){
+                              return d.id;
+                           });
+
+      /**
+       *
+       * Update
+       *
+       */
+
+      rectangles
+         .transition().duration(500)
+         .attr('x', function (d,i) {
+           return i*30
+         })
+         .attr('height', function (d) {
+           return d.opacity * 100;
+         })
+
+      /**
+       *
+       * Exit
+       *
+       */
+
+      rectangles.exit()
+          .transition().duration(500)
+            .attr('y',250)
+            .attr('height',1)
+            .remove();
+
+      /**
+       *
+       * Enter
+       *
+       */
+
+      rectangles.enter()
+         .append('rect')
+         .attr('fill', 'red')
+         .attr('height',10)
+      .transition().duration(500)
+         .attr('x', function (d,i) {
+           return i*30
+         })
+         .attr('y', 0)
+         .attr('width',20)
+         .attr('height',80)
+      .transition().duration(500)
+         .attr('y', 110);
+
+
+    }
+
+    function get_hit(){
+        console.log("getting: count is : ", Object.keys(counts).length);
+    }
+
+    function tick() {
+
+      //add a new circle every 3rd tick;
+      if (tickCounter % 3 === 0) {
+        //upper left to bottom right
+        data.push({id:tickCounter, x:0, y:0, type: 0})
+        //bottom left to upper right
+        data.push({id:tickCounter+"B", x:0, y:height, type: 1})
+        // mid left to mid-right
+        data.push({id:tickCounter+"D", x:0, y:height/2, type: 3})
+        // top left to top right
+        data.push({id:tickCounter+"E", x:0, y:height/7, type: 4})
+        // bottom left to bottom right
+        data.push({id:tickCounter+"F", x:0, y:height*6/7, type: 5})
+      }
+
+      var circles = svg.selectAll('circle');
+
+      /*=============================
+      =            Enter            =
+      =============================*/
+      circles
+         .data(data, function(d) { return d.id; })
+         .enter()
+         .append('circle')
+         .attr('cx', function(d) {return d.x})
+         .attr('cy', function(d) {return d.y})
+         .attr('r', radius)
+         .attr('opacity', opacity)
+         .attr('fill', function(d,i){
+            return color(d.id);
+         });
+
+      /*==============================
+      =            Update            =
+      ==============================*/
+      _.each(data, function(eachCircle){
+
+         switch(eachCircle.type){
+
+            case 0:
+              eachCircle.x += width/tickDivision;
+              eachCircle.y += height/tickDivision;
+              break;
+
+            case 1:
+              eachCircle.x += width/tickDivision;
+              eachCircle.y -= height/tickDivision;
+              break;
+
+            case 3:
+            case 4:
+            case 5:
+               eachCircle.x += width/tickDivision;
+               break;
+
+         }
+      });
+
+      var randomOpacity = d3.random.normal(0.3,0.2);
+      circles.transition().duration(tickDuration)
+             .attr('cx', function(d) { return d.x})
+             .attr('cy', function(d) { return d.y});
+
+      /*============================
+      =            Exit            =
+      ============================*/
+      data = _.filter(data, function(eachSquare){
+         return (eachSquare.x < width + 100) && (eachSquare.y < height + 100);
+      });
+
+      circles
+         .data(data, function(d) { return d.id; })
+         .exit()
+         //.transition()
+         //.attr("opacity", 0)
+         .remove();
+
+      tickCounter++;
+    }
+
+
+
+
+
+  </script>
+
+</body>
+</html>
