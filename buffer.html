@@ -102,7 +102,7 @@
       }
       update();
 
-    },1000)
+    },800)
 
     //Create number line
 
@@ -159,14 +159,14 @@
          .append('rect')
          .attr('fill', 'red')
          .attr('height',10)
-      .transition().duration(500)
+      .transition().duration(300)
          .attr('x', function (d,i) {
            return i*30
          })
          .attr('y', 0)
          .attr('width',20)
          .attr('height',80)
-      .transition().duration(500)
+      .transition().duration(300)
          .attr('y', 110);
 
 
