@@ -150,7 +150,7 @@ var SpiralBlock = React.createClass({
                      .enter()
                      .append('g').attr("class", "row")
                      //vertical offset
-                     .attr('transform', function(d, i){return 'translate(0,'+ (((i+1) * radius * 2)) +')';});
+                     .attr('transform', function(d, i){return 'translate(0,'+ (((i+1) * radius * 2) - radius) +')';});
 
         var circleGroups = row.selectAll("g.circle")
                         .data(function(d){ return d; })
