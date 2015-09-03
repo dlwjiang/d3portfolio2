@@ -12,7 +12,22 @@
 
     body {
       margin:0px;
+      font-family: 'Roboto', sans-serif;
     }
+
+    #title-area {
+      border-bottom: 2px solid #BBBBBB;
+    }
+
+    #title-area h1, #title-area h3{
+      margin-left:30px;
+    }
+
+    #buffer-area {
+      text-align: center;
+      margin-top:60px;
+    }
+
 
 
   </style>
@@ -26,10 +41,11 @@
 </head>
 <body>
 
-  <div>
+  <div id="title-area">
     <h1>Last N Buffer</h1>
     <h3>
       Keeps track of count of events for last N seconds via the concept of self-destructing objects.
+      Example would be a way of tracking number of visitors in last N seconds.
     </h3>
   </div>
 
@@ -54,7 +70,7 @@
     var svg = d3.select("#buffer-area")
                 .append('svg')
                 .attr('height', height)
-                .attr('width', "100%");
+                .attr('width', "90%");
 
     var width = $("svg").width();
 
@@ -74,11 +90,14 @@
         count++;
         $("#count").html(count);
 
-        for (var i = 1; i <= 5; i++){
+        var stepsToVanish = 5;
+        var timeToVanish = 5000; //ms
+        var eachStepTime = timeToVanish/stepsToVanish;
+        for (var i = 1; i <= stepsToVanish; i++){
           setTimeout(function(event,counter){
               return function(){
 
-                event.opacity -= 0.2;
+                event.opacity -= 1/stepsToVanish;
 
                 if (event.opacity <= 0.1){
                   var index = _.findIndex(counts, function (each) {
@@ -87,8 +106,9 @@
                   counts.splice(index,1);
                   count--;
                 }
+
               }
-          }(event,counter),1000*i)
+          }(event,counter),eachStepTime*i)
         }
 
         counter++;
@@ -102,12 +122,12 @@
       }
       update();
 
-    },800)
+    },300)
 
     //Create number line
 
     svg.selectAll('text')
-       .data(_.range(1,30))
+       .data(_.range(1,50))
        .enter()
        .append('text')
        .text(function(d){ return d;})
@@ -129,7 +149,7 @@
        */
 
       rectangles
-         .transition().duration(500)
+         .transition().duration(300)
          .attr('x', function (d,i) {
            return i*30
          })
@@ -144,9 +164,10 @@
        */
 
       rectangles.exit()
-          .transition().duration(500)
+          .transition().duration(300)
+            .attr('fill', 'red')
             .attr('y',250)
-            .attr('height',1)
+            .attr('height',0)
             .remove();
 
       /**
@@ -157,16 +178,18 @@
 
       rectangles.enter()
          .append('rect')
-         .attr('fill', 'red')
+         .attr('fill', '#0099FF')
+         .attr('rx', '10')
+         .attr('ry', '10')
          .attr('height',10)
-      .transition().duration(300)
+      .transition().duration(200)
          .attr('x', function (d,i) {
            return i*30
          })
          .attr('y', 0)
          .attr('width',20)
-         .attr('height',80)
-      .transition().duration(300)
+         .attr('height',100)
+      .transition().duration(100)
          .attr('y', 110);
 
 
@@ -175,90 +198,6 @@
     function get_hit(){
         console.log("getting: count is : ", Object.keys(counts).length);
     }
-
-    function tick() {
-
-      //add a new circle every 3rd tick;
-      if (tickCounter % 3 === 0) {
-        //upper left to bottom right
-        data.push({id:tickCounter, x:0, y:0, type: 0})
-        //bottom left to upper right
-        data.push({id:tickCounter+"B", x:0, y:height, type: 1})
-        // mid left to mid-right
-        data.push({id:tickCounter+"D", x:0, y:height/2, type: 3})
-        // top left to top right
-        data.push({id:tickCounter+"E", x:0, y:height/7, type: 4})
-        // bottom left to bottom right
-        data.push({id:tickCounter+"F", x:0, y:height*6/7, type: 5})
-      }
-
-      var circles = svg.selectAll('circle');
-
-      /*=============================
-      =            Enter            =
-      =============================*/
-      circles
-         .data(data, function(d) { return d.id; })
-         .enter()
-         .append('circle')
-         .attr('cx', function(d) {return d.x})
-         .attr('cy', function(d) {return d.y})
-         .attr('r', radius)
-         .attr('opacity', opacity)
-         .attr('fill', function(d,i){
-            return color(d.id);
-         });
-
-      /*==============================
-      =            Update            =
-      ==============================*/
-      _.each(data, function(eachCircle){
-
-         switch(eachCircle.type){
-
-            case 0:
-              eachCircle.x += width/tickDivision;
-              eachCircle.y += height/tickDivision;
-              break;
-
-            case 1:
-              eachCircle.x += width/tickDivision;
-              eachCircle.y -= height/tickDivision;
-              break;
-
-            case 3:
-            case 4:
-            case 5:
-               eachCircle.x += width/tickDivision;
-               break;
-
-         }
-      });
-
-      var randomOpacity = d3.random.normal(0.3,0.2);
-      circles.transition().duration(tickDuration)
-             .attr('cx', function(d) { return d.x})
-             .attr('cy', function(d) { return d.y});
-
-      /*============================
-      =            Exit            =
-      ============================*/
-      data = _.filter(data, function(eachSquare){
-         return (eachSquare.x < width + 100) && (eachSquare.y < height + 100);
-      });
-
-      circles
-         .data(data, function(d) { return d.id; })
-         .exit()
-         //.transition()
-         //.attr("opacity", 0)
-         .remove();
-
-      tickCounter++;
-    }
-
-
-
 
 
   </script>
