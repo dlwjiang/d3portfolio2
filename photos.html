@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+  <title>Photos</title>
+
+  <style type="text/css">
+
+    #header-text h1 {
+      font-size: 80px;
+      color: #2274A5;
+      font-family: 'Roboto', sans-serif;
+      font-weight:300;
+      margin: 0px;
+    }
+
+    img {
+      width: 200px;
+      height: 200px;
+      border-radius: 100px;
+    }
+
+  </style>
+
+  <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js" charset="utf-8"></script>
+  <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+  <script src="http://underscorejs.org/underscore-min.js"></script>
+
+</head>
+<body>
+
+  <!-- ====== -->
+  <!-- Header -->
+  <!-- ====== -->
+  <div id="header-text">
+    <h1>Photos</h1>
+  </div>
+
+  <!-- ====== -->
+  <!-- Images -->
+  <!-- ====== -->
+  <div id="images">
+
+  </div>
+
+  <!-- ========== -->
+  <!-- Javascript -->
+  <!-- ========== -->
+  <script>
+
+    var fileNames = _.range(1,29);
+
+    draw();
+
+    function shuffleData() {
+      fileNames = _.shuffle(fileNames);
+      redraw();
+    }
+
+    function redraw() {
+
+      d3.selectAll("img").remove();
+      draw();
+
+    }
+
+    function draw() {
+
+      d3.selectAll("img")
+        .data(fileNames, function (d) {
+          return d;
+        })
+        .enter()
+        .append("img")
+        .on("mouseover",function (e) {
+          d3.select(this)
+            .transition().duration(500)
+            .style("border-radius", "0px")
+            .transition().duration(1000)
+            .style("border-radius", "100px");
+        })
+        .on("click", shuffleData)
+        .attr("src", function (d) {
+          return "photography-images/" + d + ".jpg";
+        })
+        .style("opacity",0)
+        .transition()
+        .delay(function (d,i) {
+          return i*50;
+        })
+        .style("opacity", 1);
+
+    }
+
+
+  </script>
+
+</body>
+</html>
