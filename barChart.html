@@ -24,7 +24,7 @@
     }
 
     .svg-group {
-      outline: 1px dotted red;
+      /*outline: 1px dotted red;*/
     }
 
     #charts {
@@ -33,9 +33,11 @@
     .chart {
       display:inline-block;
       vertical-align: top;
-      width:50%;
+      /*width:50%;*/
+      width:100%;
       overflow:hidden;
     }
+
     /*
     Axis Styles
      */
@@ -73,7 +75,7 @@
 
   <div id="charts">
     <div id="chart-area" class="chart"></div>
-    <div id="chart-area2" class="chart"></div>
+    <!-- <div id="chart-area2" class="chart"></div> -->
   </div>
 
   <!-- ========== -->
@@ -82,7 +84,7 @@
 
   <script>
 
-   var chartData = [
+   var example1 = [
       {label: "apples", value: 10},
       {label: "oranges", value: 20},
       {label: "bananas", value: 30},
@@ -92,7 +94,7 @@
       {label: "strawberries", value: 50}
    ];
 
-   var chartData2 = [
+   var example2 = [
       {label: "guitar", value: 100},
       {label: "ukulele", value: 200},
       {label: "piano", value: 300},
@@ -101,11 +103,30 @@
       {label: "trumpet", value: 600}
    ];
 
-   var chart = barChart().data(chartData).target("#chart-area");
+   var example3 = [
+      {label: "apples", value: 44},
+      {label: "oranges", value: 44},
+      {label: "bananas", value: 22},
+      {label: "durians", value: 11},
+      {label: "watermelon", value: 55},
+      {label: "grapefruit", value: 55},
+      {label: "strawberries", value: 22},
+      {label: "passionfruit", value: 22}
+   ];
+
+   chartData = [example1, example2, example3];
+
+   var chart = barChart().data(chartData[0]).target("#chart-area");
    chart();
 
-   var chart2 = barChart().data(chartData2).target("#chart-area2");
-   chart2();
+   setInterval(function (arguments) {
+     var rand = Math.floor(Math.random()*3);
+     console.log("rand is : ", rand);
+     chart.update(chartData[rand]);
+   },1000)
+
+   // var chart2 = barChart().data(chartData[2]).target("#chart-area2");
+   // chart2();
 
    function barChart(){
 
@@ -114,7 +135,11 @@
       var data = [1,2,3,4,5];
       var selection = null;
 
-      function my(){
+      function draw(newData){
+
+        if (newData) {
+          data = newData;
+        }
 
         var width = $(selection).width() - margins.left - margins.right;
         var height = $(window).height() * 0.8 - margins.top - margins.bottom;
@@ -159,6 +184,8 @@
                             .attr("transform", "translate(0," + height + ")")
                             .call(xAxis);
 
+        _rotateXLabels();
+
         var yAxisGroup = svg.append("g").attr("class", "y axis").call(yAxis);
 
         /*============================
@@ -177,9 +204,6 @@
                           });
 
         var bars = barGroups.append("rect")
-                            // .attr("x", function (d) {
-                            //   return xScale(d.label);
-                            // })
                             .attr("y",function (d) {
                               return yScale(d.value);
                             })
@@ -188,6 +212,10 @@
                             })
                             .attr("width", xScale.rangeBand())
                             .attr("fill", "#888");
+
+        /*========================================
+        =            Helper Functions            =
+        ========================================*/
 
         var resizeFunction = function(newWidth,newHeight) {
 
@@ -221,6 +249,9 @@
 
           xAxisGroup.attr("transform", "translate(0," + height + ")")
                     .call(xAxis);
+
+          _rotateXLabels();
+
           yAxisGroup.call(yAxis);
 
           //Resize Bars
@@ -239,28 +270,124 @@
 
         }
 
-        my.resize = resizeFunction;
+        var update = function (newData) {
+
+          data = newData;
+
+          var yValMax = d3.max(data, function (each) {
+            return each.value;
+          })
+
+          /*=================================
+          =       Update Scales             =
+          ==================================*/
+          xScale.domain(_.pluck(data, "label"));
+          xAxis.scale(xScale);
+
+          yScale.domain([0,yValMax]);
+          yAxis.scale(yScale);
+
+          xAxisGroup.call(xAxis);
+          _rotateXLabels();
+          yAxisGroup.call(yAxis);
+
+          /*============================
+          =      Update Bars           =
+          ============================*/
+          var newGroups = svg.selectAll("g.bars")
+                          .data(data, function (d) {
+                            return d.label;
+                          });
+          //EXIT
+          //=================================
+          newGroups.exit()
+            .transition().duration(500)
+             .attr('transform', "translate(-1000,0)")
+             .remove();
+
+          //UPDATE
+          //=================================
+          newGroups.transition().duration(500)
+                .attr("transform", function (d,i) {
+                  return "translate(" + xScale(d.label) + ",0)";
+                });
+
+          newGroups.select("rect")
+              .transition().duration(500)
+              .attr("y",function (d) {
+                return yScale(d.value);
+              })
+              .attr("height", function (d) {
+                return height - yScale(d.value);
+              })
+              .attr("width", xScale.rangeBand());
+
+          //ENTER
+          //=================================
+          var enterGroup = newGroups.enter()
+                  .append("g")
+                  .attr("class", "bars");
+
+          //add rects
+          enterGroup
+              .append("rect")
+              .attr("y",function (d) {
+                return yScale(d.value);
+              })
+              .attr("height", function (d) {
+                return height - yScale(d.value);
+              })
+              .attr("width", xScale.rangeBand())
+              .attr("fill", "#888");
+
+          //transition groups in from right to left
+          enterGroup.attr("transform", function (d,i) {
+                        return "translate(2000,0)";
+                      })
+                    .transition().duration(500)
+                      .attr("transform", function (d,i) {
+                        return "translate(" + xScale(d.label) + ",0)";
+                      })
+        }
+
+        function _rotateXLabels() {
+          if (width < 800) {
+            xAxisGroup.selectAll("text")
+                      .attr("dy", ".35em")
+                      .attr("transform", "rotate(40)")
+                      .style("text-anchor", "start");
+          }
+        }
+
+        draw.resize = resizeFunction;
+
+        draw.update = update;
 
       }
 
-      my.data = function(value) {
-          if (!arguments.length) return width;
+      draw.data = function(value) {
+          if (!arguments.length) return data;
           data = value;
-          return my;
+          return draw;
       };
 
-      my.target = function (value) {
+      draw.target = function (value) {
+          if (!arguments.length) return selection;
           selection = value;
-          return my;
+          return draw;
       }
 
+      draw.replaceChart = function (newData) {
+        $(selection).empty();
+        draw(newData);
+      };
+
       $(window).on("resize",_.debounce(function () {
-         my.resize($(selection).width(), $(window).height());
+         draw.resize($(selection).width(), $(window).height());
       },200));
 
-      return my;
+      return draw;
    }
-
 
   </script>
 
