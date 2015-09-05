@@ -33,9 +33,19 @@
     .chart {
       display:inline-block;
       vertical-align: top;
-      /*width:50%;*/
-      width:100%;
+      width:50%;
+      /*width:100%;*/
       overflow:hidden;
+    }
+
+    /*
+    Bar Chart Styles
+     */
+
+    rect {
+      fill: #33AACF;
+      rx: 5;
+      ry: 5;
     }
 
     /*
@@ -75,7 +85,7 @@
 
   <div id="charts">
     <div id="chart-area" class="chart"></div>
-    <!-- <div id="chart-area2" class="chart"></div> -->
+    <div id="chart-area2" class="chart"></div>
   </div>
 
   <!-- ========== -->
@@ -125,8 +135,8 @@
      chart.update(chartData[rand]);
    },1000)
 
-   // var chart2 = barChart().data(chartData[2]).target("#chart-area2");
-   // chart2();
+   var chart2 = barChart().data(chartData[2]).target("#chart-area2");
+   chart2();
 
    function barChart(){
 
@@ -210,8 +220,8 @@
                             .attr("height", function (d) {
                               return height - yScale(d.value);
                             })
-                            .attr("width", xScale.rangeBand())
-                            .attr("fill", "#888");
+                            .attr("width", xScale.rangeBand());
+                            // .attr("fill", "#33AACF");
 
         /*========================================
         =            Helper Functions            =
@@ -337,8 +347,8 @@
               .attr("height", function (d) {
                 return height - yScale(d.value);
               })
-              .attr("width", xScale.rangeBand())
-              .attr("fill", "#888");
+              .attr("width", xScale.rangeBand());
+              // .attr("fill", "#888");
 
           //transition groups in from right to left
           enterGroup.attr("transform", function (d,i) {
