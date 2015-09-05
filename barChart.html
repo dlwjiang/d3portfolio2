@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+  <title>Bar Chart</title>
+
+  <style type="text/css">
+
+    svg {
+      background-color: #fff;
+    }
+
+    body {
+      margin:0px;
+      font-family: 'Roboto', sans-serif;
+    }
+
+    #title-area {
+      border-bottom: 2px solid #BBBBBB;
+    }
+
+    #title-area h1, #title-area h3{
+      margin-left:30px;
+    }
+
+    .svg-group {
+      outline: 1px dotted red;
+    }
+
+    #charts {
+      font-size:0;
+    }
+    .chart {
+      display:inline-block;
+      vertical-align: top;
+      width:50%;
+      overflow:hidden;
+    }
+    /*
+    Axis Styles
+     */
+
+    .axis text {
+      font: 10px sans-serif;
+    }
+
+    .axis path,
+    .axis line {
+      fill: none;
+      stroke: #000;
+      shape-rendering: crispEdges;
+    }
+
+
+  </style>
+
+  <link href='http://fonts.googleapis.com/css?family=Indie+Flower' rel='stylesheet' type='text/css'>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js" charset="utf-8"></script>
+  <link href='http://fonts.googleapis.com/css?family=Roboto:300' rel='stylesheet' type='text/css'>
+  <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+  <script src="http://underscorejs.org/underscore-min.js"></script>
+
+</head>
+<body>
+
+  <div id="title-area">
+    <h1>Bar Chart</h1>
+  </div>
+
+  <!-- ======== -->
+  <!-- Charts   -->
+  <!-- ======== -->
+
+  <div id="charts">
+    <div id="chart-area" class="chart"></div>
+    <div id="chart-area2" class="chart"></div>
+  </div>
+
+  <!-- ========== -->
+  <!-- JAVASCRIPT -->
+  <!-- ========== -->
+
+  <script>
+
+   var chartData = [
+      {label: "apples", value: 10},
+      {label: "oranges", value: 20},
+      {label: "bananas", value: 30},
+      {label: "durians", value: 20},
+      {label: "watermelon", value: 30},
+      {label: "grapefruit", value: 20},
+      {label: "strawberries", value: 50}
+   ];
+
+   var chartData2 = [
+      {label: "guitar", value: 100},
+      {label: "ukulele", value: 200},
+      {label: "piano", value: 300},
+      {label: "flute", value: 400},
+      {label: "drums", value: 500},
+      {label: "trumpet", value: 600}
+   ];
+
+   var chart = barChart().data(chartData).target("#chart-area");
+   chart();
+
+   var chart2 = barChart().data(chartData2).target("#chart-area2");
+   chart2();
+
+   function barChart(){
+
+      var margins = {left:50, top:50, right:50, bottom:50};
+
+      var data = [1,2,3,4,5];
+      var selection = null;
+
+      function my(){
+
+        var width = $(selection).width() - margins.left - margins.right;
+        var height = $(window).height() * 0.8 - margins.top - margins.bottom;
+        var columnCount = data.length;
+
+        var yValMax = d3.max(data, function (each) {
+          return each.value;
+        })
+
+        /*=================================
+        =       Setup & Scales            =
+        ==================================*/
+
+        var xScale = d3.scale.ordinal()
+                       .domain(_.pluck(data, "label"))
+                       .rangeRoundBands([0,width],0.2,0.4);
+
+        var xAxis = d3.svg.axis()
+                      .orient("bottom")
+                      .scale(xScale);
+
+        var yScale = d3.scale.linear()
+                       .domain([0,yValMax])
+                       .range([height,0]);
+
+        var yAxis = d3.svg.axis()
+                          .orient("left")
+                          .scale(yScale);
+
+        var svg = d3.select(selection)
+                    .append("svg")
+                    .attr("width", width + margins.left + margins.right)
+                    .attr("height", height + margins.top + margins.bottom)
+                   .append("g")
+                    .attr("class", "svg-group")
+                    .attr("width", width)
+                    .attr("height", height)
+                    .attr("transform", "translate(" + margins.left + "," + margins.top + ")");
+
+        var xAxisGroup = svg.append("g")
+                            .attr("class", "x axis")
+                            .attr("transform", "translate(0," + height + ")")
+                            .call(xAxis);
+
+        var yAxisGroup = svg.append("g").attr("class", "y axis").call(yAxis);
+
+        /*============================
+        =            Bars            =
+        ============================*/
+
+        var barGroups = svg.selectAll("g.bars")
+                          .data(data,function (d) {
+                            return d.label;
+                          })
+                          .enter()
+                          .append("g")
+                          .attr("class", "bars")
+                          .attr("transform", function (d,i) {
+                            return "translate(" + xScale(d.label) + ",0)";
+                          });
+
+        var bars = barGroups.append("rect")
+                            // .attr("x", function (d) {
+                            //   return xScale(d.label);
+                            // })
+                            .attr("y",function (d) {
+                              return yScale(d.value);
+                            })
+                            .attr("height", function (d) {
+                              return height - yScale(d.value);
+                            })
+                            .attr("width", xScale.rangeBand())
+                            .attr("fill", "#888");
+
+        var resizeFunction = function(newWidth,newHeight) {
+
+          //set minimum width/height
+          minLength = 200;
+          newWidth = newWidth > minLength ? newWidth: minLength;
+          newHeight = newHeight > minLength ? newHeight: minLength;
+
+          width = newWidth - margins.left - margins.right;
+          height = newHeight * 0.8 - margins.top - margins.bottom;
+
+          //Resize SVG
+          //====================================
+
+          d3.select("svg")
+            .attr("width", width + margins.left + margins.right)
+            .attr("height", height + margins.top + margins.bottom)
+
+          d3.select(".svg-group")
+            .attr("width", width)
+            .attr("height", height)
+            .attr("transform", "translate(" + margins.left + "," + margins.top + ")");
+
+          //Resize Axis'
+          //====================================
+          xScale.rangeRoundBands([0,width],0.2,0.4);
+          xAxis.scale(xScale);
+
+          yScale.range([height,0]);
+          yAxis.scale(yScale);
+
+          xAxisGroup.attr("transform", "translate(0," + height + ")")
+                    .call(xAxis);
+          yAxisGroup.call(yAxis);
+
+          //Resize Bars
+          //====================================
+          barGroups.attr("transform", function (d,i) {
+                      return "translate(" + xScale(d.label) + ",0)";
+                    });
+
+          bars.attr("y",function (d) {
+                return yScale(d.value);
+              })
+              .attr("height", function (d) {
+                return height - yScale(d.value);
+              })
+              .attr("width", xScale.rangeBand());
+
+        }
+
+        my.resize = resizeFunction;
+
+      }
+
+      my.data = function(value) {
+          if (!arguments.length) return width;
+          data = value;
+          return my;
+      };
+
+      my.target = function (value) {
+          selection = value;
+          return my;
+      }
+
+      $(window).on("resize",_.debounce(function () {
+         my.resize($(selection).width(), $(window).height());
+      },200));
+
+      return my;
+   }
+
+
+  </script>
+
+</body>
+</html>
