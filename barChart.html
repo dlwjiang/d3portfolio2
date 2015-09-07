@@ -34,6 +34,7 @@
       display:inline-block;
       vertical-align: top;
       width:50%;
+      height: 100vh;
       /*width:100%;*/
       overflow:hidden;
     }
@@ -151,7 +152,7 @@
         }
 
         var width = $(selection).width() - margins.left - margins.right;
-        var height = $(window).height() * 0.8 - margins.top - margins.bottom;
+        var height = $(selection).height() * 0.8 - margins.top - margins.bottom;
         var columnCount = data.length;
 
         var yValMax = d3.max(data, function (each) {
@@ -225,11 +226,22 @@
         /*========================================
         =            Helper Functions            =
         ========================================*/
+        var update = function (newData) {
 
-        var resizeFunction = function(newWidth,newHeight) {
+          if (newData) data = newData;
+
+          var yValMax = d3.max(data, function (each) {
+            return each.value;
+          })
+
+          /*==================================
+          =            Update SVG            =
+          ==================================*/
 
           var newWidth = $(selection).width();
-          var newHeight = $(window).height() * 0.8;
+          var newHeight = $(selection).height() * 0.8;
+
+          console.log("s: " + selection, newWidth, newHeight);
 
           //set minimum width/height
           minLength = 200;
@@ -239,23 +251,23 @@
           width = newWidth - margins.left - margins.right;
           height = newHeight - margins.top - margins.bottom;
 
-          //Resize SVG
-          //====================================
-
-          d3.select("svg")
+          d3.select(selection + " svg")
             .attr("width", width + margins.left + margins.right)
             .attr("height", height + margins.top + margins.bottom)
 
-          d3.select(".svg-group")
+          d3.select(selection + ".svg-group")
             .attr("width", width)
             .attr("height", height)
             .attr("transform", "translate(" + margins.left + "," + margins.top + ")");
 
-          //Resize Axis'
-          //====================================
+          /*=================================
+          =       Update Scales             =
+          ==================================*/
+          xScale.domain(_.pluck(data, "label"));
           xScale.rangeRoundBands([0,width],0.2,0.4);
           xAxis.scale(xScale);
 
+          yScale.domain([0,yValMax]);
           yScale.range([height,0]);
           yAxis.scale(yScale);
 
@@ -264,43 +276,6 @@
 
           _rotateXLabels();
 
-          yAxisGroup.call(yAxis);
-
-          //Resize Bars
-          //====================================
-          barGroups.attr("transform", function (d,i) {
-                      return "translate(" + xScale(d.label) + ",0)";
-                    });
-
-          bars.attr("y",function (d) {
-                return yScale(d.value);
-              })
-              .attr("height", function (d) {
-                return height - yScale(d.value);
-              })
-              .attr("width", xScale.rangeBand());
-
-        }
-
-        var update = function (newData) {
-
-          data = newData;
-
-          var yValMax = d3.max(data, function (each) {
-            return each.value;
-          })
-
-          /*=================================
-          =       Update Scales             =
-          ==================================*/
-          xScale.domain(_.pluck(data, "label"));
-          xAxis.scale(xScale);
-
-          yScale.domain([0,yValMax]);
-          yAxis.scale(yScale);
-
-          xAxisGroup.call(xAxis);
-          _rotateXLabels();
           yAxisGroup.call(yAxis);
 
           /*============================
@@ -319,13 +294,13 @@
 
           //UPDATE
           //=================================
-          newGroups.transition().duration(500)
+          newGroups.transition().duration(200)
                 .attr("transform", function (d,i) {
                   return "translate(" + xScale(d.label) + ",0)";
                 });
 
           newGroups.select("rect")
-              .transition().duration(500)
+              .transition().duration(200)
               .attr("y",function (d) {
                 return yScale(d.value);
               })
@@ -371,8 +346,6 @@
           }
         }
 
-        draw.resize = resizeFunction;
-
         draw.update = update;
 
       }
@@ -395,7 +368,7 @@
       };
 
       $(window).on("resize",_.debounce(function () {
-         draw.resize();
+         draw.update();
       },200));
 
       return draw;
