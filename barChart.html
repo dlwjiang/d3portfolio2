@@ -131,7 +131,6 @@
 
    setInterval(function (arguments) {
      var rand = Math.floor(Math.random()*3);
-     console.log("rand is : ", rand);
      chart.update(chartData[rand]);
    },1000)
 
@@ -229,13 +228,16 @@
 
         var resizeFunction = function(newWidth,newHeight) {
 
+          var newWidth = $(selection).width();
+          var newHeight = $(window).height() * 0.8;
+
           //set minimum width/height
           minLength = 200;
           newWidth = newWidth > minLength ? newWidth: minLength;
           newHeight = newHeight > minLength ? newHeight: minLength;
 
           width = newWidth - margins.left - margins.right;
-          height = newHeight * 0.8 - margins.top - margins.bottom;
+          height = newHeight - margins.top - margins.bottom;
 
           //Resize SVG
           //====================================
@@ -393,7 +395,7 @@
       };
 
       $(window).on("resize",_.debounce(function () {
-         draw.resize($(selection).width(), $(window).height());
+         draw.resize();
       },200));
 
       return draw;
