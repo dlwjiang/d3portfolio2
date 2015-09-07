@@ -221,7 +221,15 @@
                               return height - yScale(d.value);
                             })
                             .attr("width", xScale.rangeBand());
-                            // .attr("fill", "#33AACF");
+
+        var text = barGroups.append("text")
+                            .attr("y", function (d) {
+                              return yScale(d.value) - 5;
+                            })
+                            .attr("font-size","10px")
+                            .attr("fill", "#888")
+                            .text(function(d) { return d.label; });
+
 
         /*========================================
         =            Helper Functions            =
@@ -240,8 +248,6 @@
 
           var newWidth = $(selection).width();
           var newHeight = $(selection).height() * 0.8;
-
-          console.log("s: " + selection, newWidth, newHeight);
 
           //set minimum width/height
           minLength = 200;
@@ -309,6 +315,12 @@
               })
               .attr("width", xScale.rangeBand());
 
+          newGroups.select("text")
+              .transition().duration(200)
+              .attr("y",function (d) {
+                return yScale(d.value) - 5;
+              })
+
           //ENTER
           //=================================
           var enterGroup = newGroups.enter()
@@ -327,6 +339,15 @@
               .attr("width", xScale.rangeBand());
               // .attr("fill", "#888");
 
+          //add labels
+          enterGroup.append("text")
+                    .attr("y", function (d) {
+                      return yScale(d.value) - 5;
+                    })
+                    .attr("font-size","10px")
+                    .attr("fill", "#888")
+                    .text(function(d) { return d.label; });
+
           //transition groups in from right to left
           enterGroup.attr("transform", function (d,i) {
                         return "translate(2000,0)";
@@ -335,6 +356,7 @@
                       .attr("transform", function (d,i) {
                         return "translate(" + xScale(d.label) + ",0)";
                       })
+
         }
 
         function _rotateXLabels() {
