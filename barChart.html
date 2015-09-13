@@ -125,13 +125,12 @@
 
    chartData = [example1, example2, example3];
 
-   var chart = barChart().data(chartData[0]).target("#chart-area");
+   var chart = barChart().data(example1).target("#chart-area");
    chart();
 
-   // setInterval(function (arguments) {
-   //   var rand = Math.floor(Math.random()*3);
-   //   chart.update(chartData[rand]);
-   // },1000)
+   setTimeout(function (arguments) {
+     chart.update(example3);
+   },3000)
 
 
 
@@ -141,6 +140,8 @@
 
       var data = [1,2,3,4,5];
       var selection = null;
+      //number of ms between each animation.
+      var animationSpeed = 100;
 
       function draw(newData){
 
@@ -262,6 +263,9 @@
 
           newGroups.select("rect")
               .transition().duration(200)
+              .delay(function (d,i) {
+                return i * animationSpeed;
+              })
               .attr("y",function (d) {
                 return yScale(d.value);
               })
@@ -308,9 +312,13 @@
                         return "translate(2000,0)";
                       })
                     .transition().duration(500)
-                      .attr("transform", function (d,i) {
-                        return "translate(" + xScale(d.label) + ",0)";
-                      })
+                    //slide in after update finishes.
+                    .delay(function (d,i) {
+                      return i * animationSpeed;
+                    })
+                    .attr("transform", function (d,i) {
+                      return "translate(" + xScale(d.label) + ",0)";
+                    })
 
         }
 
@@ -339,6 +347,12 @@
       draw.target = function (value) {
           if (!arguments.length) return selection;
           selection = value;
+          return draw;
+      }
+
+      draw.animationSpeed = function (value) {
+          if (!arguments.length) return animationSpeed;
+          animationSpeed = value;
           return draw;
       }
 
