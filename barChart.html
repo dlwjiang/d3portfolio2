@@ -259,6 +259,12 @@
 
           yAxisGroup.call(yAxis);
 
+          //resize text to be as large as possible.
+          d3.selectAll(selection + " .x .tick > text")
+            .style("font-size", function (d) {
+              return xScale.rangeBand()*1.5/this.innerHTML.length + "px";
+            });
+
           /*============================
           =      Update Bars           =
           ============================*/
