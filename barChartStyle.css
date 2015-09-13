@@ -1,0 +1,24 @@
+/*
+Bar Chart Styles
+ */
+
+rect {
+  fill: #33AACF;
+  rx: 5;
+  ry: 5;
+}
+
+/*
+Axis Styles
+ */
+
+.axis text {
+  font: 15px sans-serif;
+}
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
