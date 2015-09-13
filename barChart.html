@@ -117,7 +117,7 @@
       {label: "oranges", value: 44},
       {label: "bananas", value: 22},
       {label: "durians", value: 11},
-      {label: "watermelon", value: 55},
+      {label: "watermelon", value: 101},
       {label: "grapefruit", value: 55},
       {label: "strawberries", value: 22},
       {label: "passionfruit", value: 22}
@@ -130,8 +130,7 @@
 
    setTimeout(function (arguments) {
      chart.update(example3);
-   },3000)
-
+   },1000)
 
 
    function barChart(){
@@ -152,6 +151,9 @@
         var width = $(selection).width() - margins.left - margins.right;
         var height = $(selection).height() * 0.8 - margins.top - margins.bottom;
         var columnCount = data.length;
+
+        //ticks every 50 px.
+        var ticks;
 
         /*=============================
         =            Setup            =
@@ -177,7 +179,10 @@
         var xAxis = d3.svg.axis().orient("bottom");
 
         var yScale = d3.scale.linear();
-        var yAxis = d3.svg.axis().orient("left");
+        var yAxis = d3.svg.axis()
+                      .orient("left")
+                      .ticks(ticks)
+                      .outerTickSize(0);
 
         var xAxisGroup = svg.append("g")
                             .attr("class", "x axis")
@@ -213,6 +218,8 @@
           width = newWidth - margins.left - margins.right;
           height = newHeight - margins.top - margins.bottom;
 
+          ticks = height/50;
+
           d3.select(selection + " svg")
             .attr("width", width + margins.left + margins.right)
             .attr("height", height + margins.top + margins.bottom)
@@ -225,13 +232,25 @@
           /*=================================
           =       Update Scales             =
           ==================================*/
-          xScale.domain(_.pluck(data, "label"));
-          xScale.rangeRoundBands([0,width],0.2,0.4);
+          xScale.domain(_.pluck(data, "label"))
+                .rangeRoundBands([0,width],0.2,0.4);
           xAxis.scale(xScale);
 
-          yScale.domain([0,yValMax]);
-          yScale.range([height,0]);
-          yAxis.scale(yScale);
+          //round upwards to 2 significant digits. nearest x5xx.
+          // e.g. 1230 -> 1500, 888 -> 1000
+          // function findUpperMax(num){
+          //   var numDigits = Math.floor(num).toString().length;
+          //   var secondDigit = parseInt(Math.floor(num).toString()[1]);
+          //   var multiplier = Math.pow(10,numDigits-1);
+          //   if (secondDigit >= 5){
+          //     return Math.ceil(num/multiplier) * multiplier;
+          //   } else {
+          //     return Math.floor(num/multiplier) * multiplier + 5 * (multiplier/10);
+          //   }
+          // }
+
+          yScale.domain([0,yValMax]).range([Math.ceil(height),0]);
+          yAxis.scale(yScale).ticks(ticks);
 
           xAxisGroup.attr("transform", "translate(0," + height + ")")
                     .call(xAxis);
