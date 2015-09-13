@@ -110,16 +110,16 @@
    var chart = barChart().data(example1).target("#chart-area");
    chart();
 
-   // setTimeout(function (arguments) {
-   //   chart.update(example3);
-   // },1000)
+   setTimeout(function (arguments) {
+     chart.update(example3);
+   },1000)
 
    //simulate live voting
-   setInterval(function () {
-     var rand = _.random(0,example1.length-1);
-     example1[rand].value += 5;
-     chart.update(example1);
-   },300);
+   // setInterval(function () {
+   //   var rand = _.random(0,example1.length-1);
+   //   example1[rand].value += 5;
+   //   chart.update(example1);
+   // },300);
 
 
   </script>

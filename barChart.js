@@ -168,6 +168,9 @@ function barChart(){
 
        newGroups.select("text")
            .transition().duration(200)
+           .delay(function (d,i) {
+             return i * animationSpeed;
+           })
            .attr("y",function (d) {
              return yScale(d.value) - 5;
            })
