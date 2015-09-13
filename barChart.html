@@ -33,9 +33,8 @@
     .chart {
       display:inline-block;
       vertical-align: top;
-      width:50%;
+      width:100%;
       height: 100vh;
-      /*width:100%;*/
       overflow:hidden;
     }
 
@@ -86,7 +85,6 @@
 
   <div id="charts">
     <div id="chart-area" class="chart"></div>
-    <div id="chart-area2" class="chart"></div>
   </div>
 
   <!-- ========== -->
@@ -130,13 +128,12 @@
    var chart = barChart().data(chartData[0]).target("#chart-area");
    chart();
 
-   setInterval(function (arguments) {
-     var rand = Math.floor(Math.random()*3);
-     chart.update(chartData[rand]);
-   },1000)
+   // setInterval(function (arguments) {
+   //   var rand = Math.floor(Math.random()*3);
+   //   chart.update(chartData[rand]);
+   // },1000)
 
-   var chart2 = barChart().data(chartData[2]).target("#chart-area2");
-   chart2();
+
 
    function barChart(){
 
@@ -155,30 +152,15 @@
         var height = $(selection).height() * 0.8 - margins.top - margins.bottom;
         var columnCount = data.length;
 
-        var yValMax = d3.max(data, function (each) {
-          return each.value;
-        })
-
-        /*=================================
-        =       Setup & Scales            =
-        ==================================*/
-
-        var xScale = d3.scale.ordinal()
-                       .domain(_.pluck(data, "label"))
-                       .rangeRoundBands([0,width],0.2,0.4);
-
-        var xAxis = d3.svg.axis()
-                      .orient("bottom")
-                      .scale(xScale);
-
-        var yScale = d3.scale.linear()
-                       .domain([0,yValMax])
-                       .range([height,0]);
-
-        var yAxis = d3.svg.axis()
-                          .orient("left")
-                          .scale(yScale);
-
+        /*=============================
+        =            Setup            =
+        =============================*/
+        /*
+         Initialize selector groups, delete remaining charting to the "update" function.
+           svg        : main chart chart-area.
+           xAxisGroup : x axis.
+           yAxisGroup : y axis.
+         */
         var svg = d3.select(selection)
                     .append("svg")
                     .attr("width", width + margins.left + margins.right)
@@ -189,52 +171,25 @@
                     .attr("height", height)
                     .attr("transform", "translate(" + margins.left + "," + margins.top + ")");
 
+
+        var xScale = d3.scale.ordinal();
+        var xAxis = d3.svg.axis().orient("bottom");
+
+        var yScale = d3.scale.linear();
+        var yAxis = d3.svg.axis().orient("left");
+
         var xAxisGroup = svg.append("g")
                             .attr("class", "x axis")
-                            .attr("transform", "translate(0," + height + ")")
-                            .call(xAxis);
+                            .attr("transform", "translate(0," + height + ")");
 
-        _rotateXLabels();
+        var yAxisGroup = svg.append("g").attr("class", "y axis");
 
-        var yAxisGroup = svg.append("g").attr("class", "y axis").call(yAxis);
-
-        /*============================
-        =            Bars            =
-        ============================*/
-
-        var barGroups = svg.selectAll("g.bars")
-                          .data(data,function (d) {
-                            return d.label;
-                          })
-                          .enter()
-                          .append("g")
-                          .attr("class", "bars")
-                          .attr("transform", function (d,i) {
-                            return "translate(" + xScale(d.label) + ",0)";
-                          });
-
-        var bars = barGroups.append("rect")
-                            .attr("y",function (d) {
-                              return yScale(d.value);
-                            })
-                            .attr("height", function (d) {
-                              return height - yScale(d.value);
-                            })
-                            .attr("width", xScale.rangeBand());
-
-        var text = barGroups.append("text")
-                            .attr("y", function (d) {
-                              return yScale(d.value) - 5;
-                            })
-                            .attr("font-size","10px")
-                            .attr("fill", "#888")
-                            .text(function(d) { return d.label; });
-
+        update();
 
         /*========================================
         =            Helper Functions            =
         ========================================*/
-        var update = function (newData) {
+        function update (newData) {
 
           if (newData) data = newData;
 
@@ -365,10 +320,13 @@
                       .attr("dy", ".35em")
                       .attr("transform", "rotate(40)")
                       .style("text-anchor", "start");
+          } else {
+            xAxisGroup.selectAll("text").attr("transform", "rotate(0)");
           }
         }
 
         draw.update = update;
+
 
       }
 
