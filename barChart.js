@@ -171,6 +171,9 @@ function barChart(){
            .attr("y",function (d) {
              return yScale(d.value) - 5;
            })
+           .text(function(d) {
+             return d.label + "(" + d.value + ")";
+           })
            .attr("font-size",function (d) {
              return xScale.rangeBand()*1.5/d.label.length + "px";
            })
@@ -203,7 +206,7 @@ function barChart(){
                  })
                  .attr("fill", "#888")
                  .text(function(d) {
-                   return d.label;
+                   return d.label + "(" + d.value + ")";
                  });
 
        //transition groups in from right to left
