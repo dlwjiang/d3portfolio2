@@ -45,11 +45,11 @@ function barChart(){
      xScale = d3.scale.ordinal();
      var xAxis = d3.svg.axis().orient("bottom");
 
-     var yScale = d3.scale.linear();
+     var yScale = d3.scale.linear().nice();
      var yAxis = d3.svg.axis()
                    .orient("left")
-                   .ticks(ticks)
-                   .outerTickSize(0);
+                   .ticks(ticks);
+                   // .outerTickSize(0);
 
      var xAxisGroup = svg.append("g")
                          .attr("class", "x axis")
@@ -103,20 +103,7 @@ function barChart(){
              .rangeRoundBands([0,width],0.2,0.4);
        xAxis.scale(xScale);
 
-       //round upwards to 2 significant digits. nearest x5xx.
-       // e.g. 1230 -> 1500, 888 -> 1000
-       // function findUpperMax(num){
-       //   var numDigits = Math.floor(num).toString().length;
-       //   var secondDigit = parseInt(Math.floor(num).toString()[1]);
-       //   var multiplier = Math.pow(10,numDigits-1);
-       //   if (secondDigit >= 5){
-       //     return Math.ceil(num/multiplier) * multiplier;
-       //   } else {
-       //     return Math.floor(num/multiplier) * multiplier + 5 * (multiplier/10);
-       //   }
-       // }
-
-       yScale.domain([0,yValMax]).range([Math.ceil(height),0]);
+       yScale.domain([0,roundUpSecondSigDigit(yValMax)]).range([Math.ceil(height),0]);
        yAxis.scale(yScale).ticks(ticks);
 
        xAxisGroup.attr("transform", "translate(0," + height + ")")
@@ -240,7 +227,6 @@ function barChart(){
 
      draw.update = update;
 
-
    }
 
    draw.data = function(value) {
@@ -282,4 +268,13 @@ function barChart(){
    },200));
 
    return draw;
+}
+
+//round second significant digit upwards.
+//e.g. 1234 -> 1300
+function roundUpSecondSigDigit(num){
+  var s = Math.floor(num).toString();
+  var divisor = Math.pow(10,s.length-2);
+  var result = Math.ceil(num/divisor) * divisor;
+  return result;
 }

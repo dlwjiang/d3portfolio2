@@ -59,5 +59,24 @@ describe("BarChart", function() {
 
   });
 
+  describe("utility function test for 'roundUpSecondSigDigit':" , function () {
+
+    beforeEach(function() {
+
+    });
+
+    it("should round up numbers properly", function () {
+
+      var testInput = [1,22,123,464,646,1234,4300];
+      var expectedOutput = [1,22,130,470,650,1300,4300];
+
+      var testOutput = _.map(testInput, function (each) {
+        return roundUpSecondSigDigit(each);
+      })
+
+      expect(testOutput).toEqual(expectedOutput);
+
+    });
+  });
 
 });
