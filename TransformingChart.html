@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+<style type="text/css">
+  .axis {
+    font: 10px sans-serif;
+  }
+
+  .axis path,
+  .axis line {
+    fill: none;
+    stroke: #000;
+    shape-rendering: crispEdges;
+  }
+
+  .x.axis path {
+    display: none;
+  }
+
+  body {
+    font-family: 'Roboto', sans-serif;
+  }
+</style>
+<body>
+<link href='http://fonts.googleapis.com/css?family=Roboto:300' rel='stylesheet' type='text/css'>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js" charset="utf-8"></script>
+<script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+
+<script>
+
+var data = [
+   {label: "apples", value: 10},
+   {label: "oranges", value: 10},
+   {label: "bananas", value: 20},
+   {label: "durians", value: 30},
+   {label: "watermelon", value: 50},
+   {label: "grapefruit", value: 80},
+   {label: "strawberries", value: 100}
+];
+
+var margins = {left:50, top:50, right:50, bottom:50};
+var width = 960 - margins.left - margins.right;
+var height = 500 - margins.top - margins.bottom;
+var color = d3.scale.category20();
+
+var svg = d3.select("body").append("svg")
+            .attr("width", width + margins.left + margins.right)
+            .attr("height", height + margins.top + margins.bottom)
+           .append("g")
+            .attr("transform", "translate(" + margins.left + "," + margins.top + ")");
+
+var xScale = d3.scale.ordinal()
+              .domain(data.map(function (d) { return d.label }))
+              .rangeRoundBands([0,width],0.2);
+var xAxis = d3.svg.axis().scale(xScale).orient("bottom");
+
+var yScale = d3.scale.linear()
+               .domain([0,d3.max(data, function(d) { return d.value; })])
+               .range([height,0]);
+var yAxis = d3.svg.axis().scale(yScale).orient("left");
+
+var dataSum = d3.sum(data, function (d) { return d.value });
+var percentageScale = d3.scale.linear()
+                        .domain([0,dataSum])
+                        .range([0,height]);
+
+svg.append("g")
+      .attr("class", "x axis")
+      .attr("transform", "translate(0," + height + ")")
+      .call(xAxis);
+
+svg.append("g")
+    .attr("class", "y axis")
+    .call(yAxis)
+  .append("text")
+    .attr("transform", "rotate(-90)")
+    .attr("y", 6)
+    .attr("dy", ".71em")
+    .style("text-anchor", "end")
+    .text("Frequency");
+
+var barGroups = svg.selectAll(".barGroup")
+                  .data(data,function (d) {return d.label; })
+                .enter().append("g")
+                  .attr("class", "barGroup")
+                  .attr("transform", function (d,i) {
+                    return "translate(" + xScale(d.label) + "," + yScale(d.value) + ")"  ;
+                  });
+
+barGroups.append("rect")
+      .attr("class", "bar")
+      .attr("width", xScale.rangeBand())
+      .attr("height", function(d) { return height - yScale(d.value); })
+      .attr("fill", function (d,i) {return color(i) });
+
+function sumToIndex(array, index, accessor) {
+
+  var sum = 0;
+
+  if (index >= 0){
+    for (var i = 0; i <= index; i ++) {
+      sum += array[i][accessor];
+    }
+  }
+  return sum;
+}
+
+function regularChart() {
+
+  barGroups
+     .transition().duration(500)
+     .attr("transform", function (d,i) {
+       return "translate(" + xScale(d.label) + "," + yScale(d.value) + ")" ;
+     });
+
+  barGroups.select("rect")
+     .transition().duration(500)
+     .attr("height", function(d) { return height - yScale(d.value); });
+
+  barGroups.selectAll("text")
+           .remove();
+
+  $(".axis").show();
+
+}
+
+function percentageChart() {
+
+  barGroups.transition().duration(500)
+            .attr("transform", function (d,i) {
+              return "translate(" +  (width/2 - xScale.rangeBand()) + "," + percentageScale(sumToIndex(data,i-1,"value")) + ")";
+            });
+
+  barGroups.select(".bar")
+     .transition().duration(500)
+     .attr("height", function(d,i) {
+        return percentageScale(sumToIndex(data,i,"value")) - percentageScale(sumToIndex(data,i-1,"value"));
+      })
+
+  barGroups.append("text")
+      .text(function (d,i) {
+        return d.label + "(" +d3.round(d.value/dataSum * 100,1) + "%)";
+      })
+      .attr("fill", "white")
+      .attr("font-size", "10px")
+      .attr("transform", function (d,i) {
+        var verticalMidshift = (percentageScale(sumToIndex(data,i,"value")) - percentageScale(sumToIndex(data,i-1,"value")))/2 + 3;
+        return "translate(5," + verticalMidshift + ")";
+      })
+    .transition().duration(500).delay(1000)
+      .attr("fill", "black")
+      .attr("transform", function (d,i) {
+        var verticalMidshift = (percentageScale(sumToIndex(data,i,"value")) - percentageScale(sumToIndex(data,i-1,"value")))/2 + 3;
+        return "translate(-" + this.getComputedTextLength() + "," + verticalMidshift + ")";
+      })
+
+  $(".axis").hide();
+}
+
+var counter = 0;
+
+d3.select("body")
+  .on("click", function () {
+    if (counter % 2 === 0)
+      percentageChart();
+    else
+      regularChart();
+    counter++;
+  })
+
+</script>
+</body>
+</html>
